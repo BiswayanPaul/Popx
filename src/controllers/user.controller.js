@@ -22,6 +22,15 @@ const geneateAccessAndRefreshToken = async (userId) => {
     }
 }
 
+// http://res.cloudinary.com/dolhdt2tr/image/upload/v1755948988/xuxslzddd0iuku6yyqut.png
+const deleteOldCloudinaryImage = async (imageUrl) => {
+    if (!imageUrl) return;
+    const parts = imageUrl.split("/");
+    const imageWithExtension = parts[parts.length - 1];
+    const imageId = imageWithExtension.split(".")[0];
+    await cloudinary.uploader.destroy(imageId);
+}
+
 
 const registerUser = asyncHandler(async (req, res) => {
     // take data from frontend
@@ -268,13 +277,21 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Could not upload avatar. Please try again")
     }
 
+    const userToUpdate = await User.findById(req.user._id);
+
+    const oldCoverImageUrl = userToUpdate.coverImage;
+
     const user = await User.findByIdAndUpdate(req.user._id, {
         $set: {
             coverImage: coverImage.url
         }
     }, { new: true }).select("-password -refreshToken")
 
+
     await user.save({ validateBeforeSave: false });
+
+    await deleteOldCloudinaryImage(oldCoverImageUrl);
+
 
     return res
         .status(200)
@@ -296,6 +313,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Could not upload avatar. Please try again")
     }
 
+    const userToUpdate = await User.findById(req.user._id);
+
+    const oldAvatarUrl = userToUpdate.avatar;
+
     const user = await User.findByIdAndUpdate(req.user._id, {
         $set: {
             avatar: avatar.url
@@ -303,6 +324,9 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     }, { new: true }).select("-password -refreshToken")
 
     await user.save({ validateBeforeSave: false });
+
+    await deleteOldCloudinaryImage(oldAvatarUrl);
+
 
     return res
         .status(200)
