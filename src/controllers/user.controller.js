@@ -23,7 +23,6 @@ const geneateAccessAndRefreshToken = async (userId) => {
 }
 
 
-
 const registerUser = asyncHandler(async (req, res) => {
     // take data from frontend
 
@@ -99,6 +98,7 @@ const registerUser = asyncHandler(async (req, res) => {
         ))
 })
 
+
 const loginUser = asyncHandler(async (req, res) => {
     // Steps: 
     // 1. check for email and password in the request body.
@@ -148,6 +148,7 @@ const loginUser = asyncHandler(async (req, res) => {
         ))
 })
 
+
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
         $set: {
@@ -172,6 +173,7 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, {}, "User logged out successfully"))
 
 })
+
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -279,6 +281,8 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Cover image updated successfully"))
 
 })
+
+
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path
 
@@ -305,5 +309,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Avatar updated successfully"))
 
 })
+
+
 
 export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateUserAvatar, updateUserCoverImage }
