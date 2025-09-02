@@ -1,16 +1,45 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { backendUrl } from "@/lib/utils";
 
 const Login = () => {
     const [email, setEmail] = useState("johndoe@example.com");
     const [password, setPassword] = useState("johndoe");
-    const navigate = useNavigate()
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log("Email:", email);
-        console.log("Password:", password);
-        
-        navigate("/account")
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await axios.post(
+                `${backendUrl}/users/login`,
+                { email, password },
+                {
+                    withCredentials: true, // important for cookies to work
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            console.log("Login success:", response.data);
+
+            // Optionally, you can store tokens in localStorage/sessionStorage if needed
+            // localStorage.setItem("accessToken", response.data.data.accessToken);
+
+            // Navigate to account page
+            navigate("/account");
+        } catch (err: any) {
+            console.error("Login error:", err.response || err);
+            setError(err.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -23,6 +52,10 @@ const Login = () => {
                     Lorem ipsum dolor sit amet, consectetur adipisicing elit.
                 </p>
 
+                {error && (
+                    <div className="mb-4 text-red-600 font-medium text-sm">{error}</div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Email */}
                     <div className="relative">
@@ -32,14 +65,14 @@ const Login = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                             placeholder=" "
                         />
                         <label
                             htmlFor="email"
-                            className="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-900 px-2
-                        peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 
-                        peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
+                            className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 
+              peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
                         >
                             Email Address
                         </label>
@@ -53,14 +86,14 @@ const Login = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-purple-500 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                             placeholder=" "
                         />
                         <label
                             htmlFor="password"
-                            className="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-900 px-2
-                        peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 
-                        peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
+                            className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 
+              peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
                         >
                             Password
                         </label>
@@ -69,9 +102,10 @@ const Login = () => {
                     {/* Button */}
                     <button
                         type="submit"
-                        className="w-full bg-gray-300 hover:bg-purple-600 hover:text-white text-gray-700 font-medium py-2 rounded-md transition-colors"
+                        disabled={loading}
+                        className={`w-full ${loading ? "bg-gray-400" : "bg-purple-600 hover:bg-purple-700"} text-white font-medium py-2 rounded-md transition-colors`}
                     >
-                        Login
+                        {loading ? "Logging in..." : "Login"}
                     </button>
                 </form>
             </div>
