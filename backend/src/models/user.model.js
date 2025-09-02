@@ -3,14 +3,6 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt"
 
 const userSchema = new Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
-        trim: true,
-        index: true,
-    },
     email: {
         type: String,
         required: true,
@@ -24,9 +16,23 @@ const userSchema = new Schema({
         trim: true,
         index: true,
     },
+    phonenumber: {
+        type: Number,
+        required: false,
+        index: true
+    },
     password: {
         type: String,
         required: [true, "Password is required"],
+    },
+    companyname: {
+        type: String,
+        required: false,
+        trim: true
+    },
+    agency: {
+        type: Boolean,
+        require: true
     },
     refreshToken: {
         type: String,
@@ -51,7 +57,6 @@ userSchema.methods.generateAccessToken = function () {
         {
             _id: this._id,
             email: this.email,
-            username: this.username,
             fullname: this.fullname,
         },
         process.env.ACCESS_TOKEN_SECRET,

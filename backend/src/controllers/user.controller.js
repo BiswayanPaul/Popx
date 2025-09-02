@@ -24,18 +24,15 @@ const geneateAccessAndRefreshToken = async (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
 
-    const { fullname, email, username, password } = req.body;
-    if ([fullname, email, username, password].some((field) =>
-        field?.trim() === "")
+    const { fullname, email, password, phonenumber, companyname, agency } = req.body;
+    if ([fullname, email, password].some((field) =>
+        field?.trim() === "") || agency == null
     ) {
         throw new ApiError(400, "All fields are required")
     }
 
     const existedUser = await User.findOne({
-        $or: [
-            { email },
-            { username }
-        ]
+        email
     })
     if (existedUser) {
         throw new ApiError(409, "User already exists")
@@ -45,7 +42,9 @@ const registerUser = asyncHandler(async (req, res) => {
         fullname,
         email,
         password,
-        username: username.toLowerCase()
+        companyname: companyname.toLowerCase(),
+        phonenumber,
+        agency
     })
 
     const createdUser = await User.findById(user._id).select(
@@ -63,13 +62,13 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, username, password } = req.body;
-    if (!username && !email) {
-        throw new ApiError(400, "Email or Username is required")
+    const { email, password } = req.body;
+    if (!email) {
+        throw new ApiError(400, "Email is required")
     }
 
     const user = await User.findOne({
-        $or: [{ email }, { username }]
+        email
     })
 
     if (!user) {
