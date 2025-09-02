@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URI; // your .env variable
 
 const Register = () => {
     const [fullName, setFullName] = useState("John Doe");
@@ -8,18 +11,42 @@ const Register = () => {
     const [password, setPassword] = useState("johndoe");
     const [company, setCompany] = useState("John");
     const [isAgency, setIsAgency] = useState<null | boolean>(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
     const navigate = useNavigate();
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log({
-            fullName,
-            phone,
-            email,
-            password,
-            company,
-            isAgency,
-        });
-        navigate("/account")
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await axios.post(
+                `${backendUrl}/users/register`,
+                {
+                    fullname: fullName,
+                    phonenumber: phone,
+                    email,
+                    password,
+                    companyname: company,
+                    agency: isAgency,
+                },
+                {
+                    withCredentials: true,
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+
+            console.log("Register success:", response.data);
+            navigate("/login"); // redirect after success
+        } catch (err: any) {
+            console.error("Register error:", err);
+            if (err.response?.data?.message) setError(err.response.data.message);
+            else setError("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -28,8 +55,10 @@ const Register = () => {
                 <h1 className="text-2xl font-bold text-gray-900 mb-1">
                     Create your PopX account
                 </h1>
+                {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
                 <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+                    {/* Full Name */}
                     <div className="relative">
                         <input
                             type="text"
@@ -37,26 +66,20 @@ const Register = () => {
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             required
-                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm 
-                            text-gray-900 bg-transparent rounded-lg border border-gray-300 
-                            appearance-none focus:outline-none focus:ring-0 
-                            focus:border-purple-600 peer"
+                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                             placeholder=" "
                         />
                         <label
                             htmlFor="fullName"
-                            className="absolute text-sm text-gray-500 duration-300 transform 
-                            -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white 
-                            px-2 peer-placeholder-shown:scale-100 
-                            peer-placeholder-shown:-translate-y-1/2 
-                            peer-placeholder-shown:top-1/2 
-                            peer-focus:top-2 peer-focus:scale-75 
-                            peer-focus:-translate-y-4 peer-focus:text-purple-600"
+                            className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+              peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
                         >
                             Full Name
                         </label>
                     </div>
 
+                    {/* Phone */}
                     <div className="relative">
                         <input
                             type="tel"
@@ -64,25 +87,20 @@ const Register = () => {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             required
-                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm 
-                            text-gray-900 bg-transparent rounded-lg border border-gray-300 
-                            appearance-none focus:outline-none focus:ring-0 
-                            focus:border-purple-600 peer"
+                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                             placeholder=" "
                         />
                         <label
                             htmlFor="phone"
-                            className="absolute text-sm text-gray-500 duration-300 transform 
-                            -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white 
-                            px-2 peer-placeholder-shown:scale-100 
-                            peer-placeholder-shown:-translate-y-1/2 
-                            peer-placeholder-shown:top-1/2 
-                            peer-focus:top-2 peer-focus:scale-75 
-                            peer-focus:-translate-y-4 peer-focus:text-purple-600"
+                            className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+              peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
                         >
                             Phone Number
                         </label>
                     </div>
+
+                    {/* Email */}
                     <div className="relative">
                         <input
                             type="email"
@@ -90,26 +108,20 @@ const Register = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm 
-                            text-gray-900 bg-transparent rounded-lg border border-gray-300 
-                            appearance-none focus:outline-none focus:ring-0 
-                            focus:border-purple-600 peer"
+                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                             placeholder=" "
                         />
                         <label
                             htmlFor="email"
-                            className="absolute text-sm text-gray-500 duration-300 transform 
-                            -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white 
-                            px-2 peer-placeholder-shown:scale-100 
-                            peer-placeholder-shown:-translate-y-1/2 
-                            peer-placeholder-shown:top-1/2 
-                            peer-focus:top-2 peer-focus:scale-75 
-                            peer-focus:-translate-y-4 peer-focus:text-purple-600"
+                            className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+              peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
                         >
                             Email Address
                         </label>
                     </div>
 
+                    {/* Password */}
                     <div className="relative">
                         <input
                             type="password"
@@ -117,26 +129,20 @@ const Register = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm 
-                            text-gray-900 bg-transparent rounded-lg border border-gray-300 
-                            appearance-none focus:outline-none focus:ring-0 
-                            focus:border-purple-600 peer"
+                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                             placeholder=" "
                         />
                         <label
                             htmlFor="password"
-                            className="absolute text-sm text-gray-500 duration-300 transform 
-                            -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white 
-                            px-2 peer-placeholder-shown:scale-100 
-                            peer-placeholder-shown:-translate-y-1/2 
-                            peer-placeholder-shown:top-1/2 
-                            peer-focus:top-2 peer-focus:scale-75 
-                            peer-focus:-translate-y-4 peer-focus:text-purple-600"
+                            className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+              peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
                         >
                             Password
                         </label>
                     </div>
 
+                    {/* Company */}
                     <div className="relative">
                         <input
                             type="text"
@@ -144,30 +150,22 @@ const Register = () => {
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
                             required
-                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm 
-                            text-gray-900 bg-transparent rounded-lg border border-gray-300 
-                            appearance-none focus:outline-none focus:ring-0 
-                            focus:border-purple-600 peer"
+                            className="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:outline-none focus:ring-0 focus:border-purple-600 peer"
                             placeholder=" "
                         />
                         <label
                             htmlFor="company"
-                            className="absolute text-sm text-gray-500 duration-300 transform 
-                            -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white 
-                            px-2 peer-placeholder-shown:scale-100 
-                            peer-placeholder-shown:-translate-y-1/2 
-                            peer-placeholder-shown:top-1/2 
-                            peer-focus:top-2 peer-focus:scale-75 
-                            peer-focus:-translate-y-4 peer-focus:text-purple-600"
+                            className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+              peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-purple-600"
                         >
                             Company Name
                         </label>
                     </div>
 
+                    {/* Agency */}
                     <div>
-                        <span className="block text-sm text-gray-700 mb-2">
-                            Are you an Agency?
-                        </span>
+                        <span className="block text-sm text-gray-700 mb-2">Are you an Agency?</span>
                         <div className="flex space-x-4">
                             <label className="flex items-center">
                                 <input
@@ -196,12 +194,13 @@ const Register = () => {
                         </div>
                     </div>
 
+                    {/* Submit */}
                     <button
                         type="submit"
-                        className="w-full bg-purple-600 hover:bg-purple-700 
-                        text-white font-medium py-2 rounded-md transition-colors"
+                        disabled={loading}
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 rounded-md transition-colors"
                     >
-                        Create Account
+                        {loading ? "Creating..." : "Create Account"}
                     </button>
                 </form>
             </div>
