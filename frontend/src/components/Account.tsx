@@ -17,7 +17,7 @@ const ProfileCard: React.FC = () => {
         const fetchUser = async () => {
             try {
                 const response = await axios.get(`${backendUrl}/users/current-user`, {
-                    withCredentials: true, // send cookies automatically
+                    withCredentials: true,
                 });
 
                 const user = response.data.data;
@@ -40,7 +40,6 @@ const ProfileCard: React.FC = () => {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImage(reader.result as string);
-                // optionally upload to backend here
             };
             reader.readAsDataURL(file);
         }
@@ -57,7 +56,7 @@ const ProfileCard: React.FC = () => {
                 {},
                 { withCredentials: true }
             );
-            navigate("/login"); // redirect to login page
+            navigate("/login");
         } catch (error) {
             console.error("Logout failed:", error);
         }
